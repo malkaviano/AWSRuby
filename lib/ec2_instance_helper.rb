@@ -8,7 +8,7 @@ module AWSRuby
             t = Time.now
 
             resp = @ec2.describe_spot_price_history({
-                start_time: t - (60 * 60 * 6),
+                start_time: t,
                 end_time: t + (60 * 60 * 24), 
                 instance_types: instance_types, 
                 product_descriptions: product_descriptions

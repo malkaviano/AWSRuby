@@ -14,12 +14,16 @@ module AWSRuby
 
                 num = include_master ? (conf.nodes + 1) : conf.nodes
 
-                total = num * (price + (conf.ebs * ebs_cost_per_gb))
+                total = total_cost(num, price, conf.ebs, ebs_cost_per_gb)
 
                 hash[total] = [conf.instance_type, zone]
             end
 
-            hash.min_by {|key, value| key}
+            hash.min_by {|key, value| key}.flatten
+        end
+
+        def self.total_cost(num, price, ebsGB, ebs_cost_per_gb)
+            (num * (price + (ebsGB * ebs_cost_per_gb))).round(2)
         end
 
         def self.customer_etl
