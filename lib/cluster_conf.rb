@@ -6,12 +6,15 @@ module AWSRuby
             super
         end
 
-        def self.lower_cost_conf(instances_with_cost, confs)
+        def self.lower_cost_conf(instances_with_cost, confs, ebs_cost_per_gb, include_master = true)
             hash = {}
 
             confs.each do |conf|
                 zone, price = instances_with_cost[conf.instance_type]
-                total = conf.nodes * price
+
+                num = include_master ? (conf.nodes + 1) : conf.nodes
+
+                total = num * (price + (conf.ebs * ebs_cost_per_gb))
 
                 hash[total] = [conf.instance_type, zone]
             end

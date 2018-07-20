@@ -21,11 +21,14 @@ module AWSRuby
 
         ec2 = Aws::EC2::Client.new(region: region)
 
-        [ ec2, region, product_descriptions ]
+        # Estimation of 6h job
+        ebs_cost_per_gb = 0.1 * (21600.0 / (86400 * 30))
+
+        [ ec2, region, product_descriptions, ebs_cost_per_gb ]
     end
 
     def self.run
-        ec2, region, product_descriptions = setup
+        ec2, region, product_descriptions, ebs_cost_per_gb = setup
 
         ec2_instance_helper = EC2InstanceHelper.new(ec2)
 
@@ -37,7 +40,7 @@ module AWSRuby
 
         instances_min_price = ec2_instance_helper.min_price(instances_info)
 
-        conf = ClusterConf.lower_cost_conf(instances_min_price, confs)
+        conf = ClusterConf.lower_cost_conf(instances_min_price, confs, ebs_cost_per_gb)
 
         p conf
 
