@@ -2,7 +2,7 @@ module AWSRuby
     require 'aws-sdk-s3'
     require 'aws-sdk-ec2'
     require_relative 'lib/spot_client'
-    require_relative 'lib/cluster_conf'
+    require_relative 'lib/load_confs'
     require_relative 'lib/announcer'
     require_relative 'lib/appraiser'
 
@@ -32,7 +32,7 @@ module AWSRuby
             region: region,
             product_descriptions: product_descriptions,
             ebs_cost: ebs_cost_per_gb,
-            confs: ClusterConf.customer_etl
+            confs: LoadConfs.cluster_confs
         }
     end
     
