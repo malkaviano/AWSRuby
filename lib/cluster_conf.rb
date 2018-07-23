@@ -6,27 +6,7 @@ module AWSRuby
         
         def initialize(params)
             super
-        end
-
-        def self.lower_cost_conf(instances_with_cost, confs, ebs_cost_per_gb, include_master = true)
-            hash = {}
-
-            confs.each do |conf|
-                zone, price = instances_with_cost[conf.instance_type]
-
-                num = include_master ? (conf.nodes + 1) : conf.nodes
-
-                total = total_cost(num, price, conf.ebs, ebs_cost_per_gb)
-
-                hash[total] = [conf.instance_type, zone]
-            end
-
-            hash.min_by {|key, value| key}.flatten
-        end
-
-        def self.total_cost(num, price, ebsGB, ebs_cost_per_gb)
-            (num * (price + (ebsGB * ebs_cost_per_gb))).round(2)
-        end
+        end        
 
         def self.customer_etl
             [

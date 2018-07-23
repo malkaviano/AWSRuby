@@ -1,7 +1,7 @@
 module AWSRuby
     require_relative 'pod'
 
-    class EC2InstanceInfo
+    class SpotInfo
         include Pod
 
         def initialize(params)

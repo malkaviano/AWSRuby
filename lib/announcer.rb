@@ -1,22 +1,24 @@
 module AWSRuby
     module Announcer
-        def self.list_confs_min_prices(args)
-            puts "Listing best price for all configs"
+        class << self
+            def list_confs_min_prices(params)
+                puts "Listing best price for all configs"
 
-            print_confs(args)
-        end
+                print_confs(params)
+            end
 
-        def self.print_min_cost_conf(args)
-            puts "\nCheapest config at the moment:"
+            def print_min_cost_conf(params)
+                puts "\nCheapest config at the moment:"
 
-            print_confs(args)
-        end
+                print_confs(params)
+            end
 
-        private
+            private
 
-        def self.print_confs(args)
-            args.each do |argument|                
-                puts "Instance type: #{argument[:instance_type]} - Zone: #{argument[:zone]} - Nodes: #{argument[:nodes]} with #{argument[:ebs]}GB EBS costing #{argument[:cost]}$/hour"
+            def print_confs(params)
+                params.each do |argument|                
+                    puts "Instance type: #{argument[:instance_type]} - Zone: #{argument[:zone]} - Nodes: #{argument[:nodes]} with #{argument[:ebs]}GB EBS costing #{argument[:cost]}$/hour"
+                end
             end
         end
     end
