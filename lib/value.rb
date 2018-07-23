@@ -1,5 +1,5 @@
 module AWSRuby
-    class Value
+    module Value
         def initialize(params)
             params.each do |key, value|
                 instance_variable_set("@#{key}".to_sym, value)                

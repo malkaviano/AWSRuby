@@ -1,7 +1,9 @@
 module AWSRuby
-    require_relative 'entity'
+    require_relative 'pod'
 
-    class EC2InstanceInfo < Entity
+    class EC2InstanceInfo
+        include Pod
+
         def initialize(params)
             super
         end
