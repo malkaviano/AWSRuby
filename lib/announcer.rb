@@ -21,7 +21,8 @@ module AWSRuby
             def print_cluster_info(cluster_info)
                 cluster_info.each_with_index do |hash, i|
                     @logger.info("Instance: #{i + 1}")
-                    hash.each {|key, value| @logger.info("#{key}: #{value}") }                
+                    
+                    print_instance_info(hash)
                 end
     
                 @logger.info("Total: #{cluster_info.count}")
@@ -32,6 +33,18 @@ module AWSRuby
             def print_confs(params)
                 params.each do |argument|                
                     @logger.info("Instance type: #{argument[:instance_type]} - Zone: #{argument[:zone]} - Nodes: #{argument[:nodes]} with #{argument[:ebs]}GB EBS costing #{argument[:cost]}$/hour")
+                end
+            end
+
+            def print_instance_info(hash)
+                hash.each do |key, value|
+                    if value.kind_of?(Array) then
+                        @logger.info("#{key}:")
+
+                        value.each {|h| print_instance_info(h) }                        
+                    else
+                        @logger.info("#{key}: #{value}")
+                    end
                 end
             end
         end
