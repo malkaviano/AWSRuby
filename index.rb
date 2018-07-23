@@ -27,27 +27,7 @@ module AWSRuby
         ec2_instance_helper = EC2InstanceHelper.new(ec2)
 
         [ ec2_instance_helper, region, product_descriptions, ebs_cost_per_gb ]
-    end
-
-    def self.cheapest_conf
-        ec2_instance_helper, region, product_descriptions, ebs_cost_per_gb = setup
-
-        confs = ClusterConf.customer_etl
-
-        instances_history = ec2_instance_helper.history_for(confs.map {|conf| conf.instance_type}, product_descriptions)
-
-        instances_info = ec2_instance_helper.history_to_info(instances_history)
-
-        instances_min_price = ec2_instance_helper.min_price(instances_info)
-
-        conf = ClusterConf.lower_cost_conf(instances_min_price, confs, ebs_cost_per_gb)
-
-        result = confs.select {|cluster_conf| cluster_conf.instance_type == conf[1]}.pop
-        
-        puts "Cheapest config at the moment:"
-
-        puts "Instance type: #{conf[1]} - Zone: #{conf[2]} - Nodes: #{result.nodes} with #{result.ebs}GB EBS costing #{conf[0]}$/hour"
-    end
+    end    
 
     def self.list_conf_cost
         ec2_instance_helper, region, product_descriptions, ebs_cost_per_gb = setup
