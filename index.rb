@@ -4,6 +4,7 @@ module AWSRuby
     require_relative 'lib/ec2_instance_helper'
     require_relative 'lib/cluster_conf'
     require_relative 'lib/ec2_instance_info'    
+    require_relative 'lib/announcer'
 
     def self.setup
         throw RuntimeError("ENV credentials not set!") if ENV['AWS_ACCESS_KEY_ID'].nil? || ENV['AWS_SECRET_ACCESS_KEY'].nil?
@@ -40,7 +41,7 @@ module AWSRuby
 
         instances_min_price = ec2_instance_helper.min_price(instances_info)
         
-        puts "Listing best price for all configs"
+        
 
         result = instances_min_price.map do |instance_type, a|
             result = confs.select {|cluster_conf| cluster_conf.instance_type == instance_type}.pop
@@ -48,21 +49,19 @@ module AWSRuby
             zone = a[0]
             price = a[1]
 
-            total = ClusterConf.total_cost(result.nodes, price, result.ebs, ebs_cost_per_gb)            
-            
-            puts "Instance type: #{instance_type} - Zone: #{zone} - Nodes: #{result.nodes} with #{result.ebs}GB EBS costing #{total}$/hour"
+            total = ClusterConf.total_cost(result.nodes, price, result.ebs, ebs_cost_per_gb)                    
 
-            [ instance_type, zone, result.nodes, result.ebs, total ]
+            { instance_type: instance_type, zone: zone, nodes: result.nodes, ebs: result.ebs, cost: total }
         end
 
-        r = result.min {|i1, i2| i1[4] <=> i2[4] }
+        best = [ result.min {|i1, i2| i1[:cost] <=> i2[:cost] } ]
 
-        puts "\nCheapest config at the moment:"
-
-        puts "Instance type: #{r[0]} - Zone: #{r[1]} - Nodes: #{r[2]} with #{r[3]}GB EBS costing #{r[4]}$/hour"
-
-        [ result, r ]
+        [ result, best ]
     end
 
-    list_conf_cost
+    min_prices, best_conf = list_conf_cost
+
+    Announcer.list_confs_min_prices(min_prices)
+
+    Announcer.print_min_cost_conf(best_conf)
 end
