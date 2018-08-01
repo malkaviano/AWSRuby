@@ -26,8 +26,8 @@ module AWSRuby
         end
 
         def cluster_running_info_for(tagNames)
-            filters = [
-                { name: 'tag:Name', values: tagNames },
+            filters = [                
+                { name: 'tag:spark_cluster_name', values: tagNames },
                 { name: 'instance-state-name', values: ['running'] }
             ]
 
@@ -51,20 +51,22 @@ module AWSRuby
 
             instances_history = history_now
 
-            min_prices, best = appraise_confs(instances_history)
-
-            cluster_info = cluster_running_info_for(['crm-ignition-dev-raf'])
+            min_prices, best = appraise_confs(instances_history)            
 
             ARGV.each do|a|
-                case a
+                cmd, arg = a.split(' ')
+
+                case cmd
                 when "print_min_prices"
                     print_min_prices(min_prices)
                 when "print_min_cost_conf"
                     print_min_cost_conf(best)
                 when "print_cluster_info"
+                    cluster_info = cluster_running_info_for([arg])
+
                     print_cluster_info(cluster_info)
                 else
-                  puts "Wrong option"
+                    puts "Wrong option"
                 end
                 
             end
