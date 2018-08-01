@@ -28,7 +28,7 @@ module AWSRuby
         
                 instances_min_price = min_price(instances_info)
         
-                result = instances_min_price.map do |instance_type, a|
+                min_prices = instances_min_price.map do |instance_type, a|
                     result = confs.select {|cluster_conf| cluster_conf.instance_type == instance_type}.pop
         
                     zone = a[0]
@@ -39,9 +39,9 @@ module AWSRuby
                     { instance_type: instance_type, zone: zone, nodes: result.nodes, ebs: result.ebs, cost: total }
                 end
         
-                best = [ result.min {|i1, i2| i1[:cost] <=> i2[:cost] } ]
+                best = [ min_prices.min {|i1, i2| i1[:cost] <=> i2[:cost] } ]
         
-                [ result, best ]
+                [ min_prices, best ]
             end
             
             def history_to_info(instances_history)
