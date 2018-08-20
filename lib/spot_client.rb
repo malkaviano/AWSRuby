@@ -7,8 +7,13 @@ module AWSRuby
         def history_for(spot_history_filters)
             resp = @ec2.describe_spot_price_history(spot_history_filters)
                         .spot_price_history
-    
+
             resp.group_by {|history| history.instance_type }
-        end        
+        end
+
+        def terminate_instance(ids)
+            @ec2.terminate_instances({
+                instance_ids: ids })
+        end
     end
 end

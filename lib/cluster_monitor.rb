@@ -6,11 +6,12 @@ module AWSRuby
 
         def cluster_info(filters)
             result = @ec2.describe_instances({filters: filters})
-            
+
             result.reservations.map do |reservation|
                 reservation.instances.map do |instance|
                     hash = {}
 
+                    hash.store("instance_id", instance.instance_id)
                     hash.store("image_id", instance.image_id)
                     hash.store("instance_type", instance.instance_type)
                     hash.store("key_name", instance.key_name)
@@ -31,7 +32,7 @@ module AWSRuby
                     instance.security_groups.each do |group|
                         sg.push({group.group_id => group.group_name})
                     end
-                    
+
                     hash.store("security_groups", sg)
 
                     tags = []
