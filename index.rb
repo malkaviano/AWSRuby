@@ -48,20 +48,20 @@ module AWSRuby
 
         def terminate_cluster(search)
             filters = [
-                #{ name: 'tag:spark_cluster_name', values: [ search ] },
-                { name: 'instance.group-name', values: [ search ] },
+                { name: 'tag:spark_cluster_name', values: [ search ] },
+                #{ name: 'instance.group-name', values: [ search ] },
                 { name: 'instance-state-name', values: ['running'] }
             ]
 
             instance_ids = @cluster_monitor.cluster_info(filters).map {|info| info["instance_id"] }
 
-            instance_ids.each do |id|
-                puts "Terminating #{id}"
+            if instance_ids.size > 0
+                instance_ids.each do |id|
+                    puts "Terminating #{id}"
+                end
 
-                #@spot_client.terminate_instance(id)
+                @spot_client.terminate_instance(instance_ids)
             end
-
-            @spot_client.terminate_instance(instance_ids)
         end
 
         def run
