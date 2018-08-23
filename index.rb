@@ -55,13 +55,9 @@ module AWSRuby
 
             instance_ids = @cluster_monitor.cluster_info(filters).map {|info| info["instance_id"] }
 
-            if instance_ids.size > 0
-                instance_ids.each do |id|
-                    puts "Terminating #{id}"
-                end
+            Announcer.print_cluster_termination(instance_ids)
 
-                @spot_client.terminate_instance(instance_ids)
-            end
+            @spot_client.terminate_instance(instance_ids)
         end
 
         def run

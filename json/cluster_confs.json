@@ -6,11 +6,5 @@
     {"instance_type":"r4.16xlarge", "nodes":5, "ebs":40},
     {"instance_type":"r4.8xlarge", "nodes":10, "ebs":40},
     {"instance_type":"r4.4xlarge", "nodes":15, "ebs":40},
-    {"instance_type":"r4.2xlarge", "nodes":20, "ebs":40},
-    
-    {"instance_type":"cr1.8xlarge", "nodes":10, "ebs":0},
-
-    {"instance_type":"d2.2xlarge", "nodes":20, "ebs":0},
-    {"instance_type":"d2.4xlarge", "nodes":15, "ebs":0},
-    {"instance_type":"d2.8xlarge", "nodes":10, "ebs":0}
+    {"instance_type":"r4.2xlarge", "nodes":20, "ebs":40}
 ]

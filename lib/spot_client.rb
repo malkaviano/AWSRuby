@@ -12,6 +12,8 @@ module AWSRuby
         end
 
         def terminate_instance(ids)
+            return if ids.empty?
+
             @ec2.terminate_instances({
                 instance_ids: ids })
         end
