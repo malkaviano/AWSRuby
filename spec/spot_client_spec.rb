@@ -9,14 +9,16 @@ RSpec.describe SpotClient do
 
     let(:spot_client) { SpotClient.new(client) }
 
-    describe "#history_for" do
-        context "when there are results" do
-            let(:client) do
-                ec2_client.stub_responses(
-                        :describe_spot_price_history,
+    let(:client) do
+        ec2_client.stub_responses(
+                :describe_spot_price_history,
+                ->(context) do
+                    if (context.params.empty?) then
                         Aws::EC2::Types::DescribeSpotPriceHistoryResult.new(
-                            # This is the to_h version of the response.
-                            # This is not entirely correct
+                            :spot_price_history => []
+                        )
+                    else
+                        Aws::EC2::Types::DescribeSpotPriceHistoryResult.new(
                             :spot_price_history => [
                                 Aws::EC2::Types::SpotPrice.new(
                                     {
@@ -65,11 +67,15 @@ RSpec.describe SpotClient do
                                 )
                             ]
                         )
-                    )
+                    end
+                end
+            )
 
-                ec2_client
-            end
+        ec2_client
+    end
 
+    describe "#history_for" do
+        context "when there are results" do
             expected = {
                 "r3.2xlarge" => [
                     {:availability_zone=>"us-east-1d", :instance_type=>"r3.2xlarge", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.346500", :timestamp=>"2018-10-06 22:05:45 UTC"},
@@ -84,15 +90,13 @@ RSpec.describe SpotClient do
 
 
             it "returns aggregated results per instance type" do
-                result = spot_client.history_for({})
+                result = spot_client.history_for({:instance_types => ["some"]})
 
                 expect(result).to include(expected)
             end
         end
 
         context "when there are no results" do
-            let(:client) { ec2_client }
-
             it "returns empty hash" do
                 result = spot_client.history_for({})
 
