@@ -1,6 +1,5 @@
 module AWSRuby
-    require 'aws-sdk-s3'
-    require 'aws-sdk-ec2'
+    require_relative 'lib/require_aws'
     require_relative 'lib/spot_client'
     require_relative 'lib/load_confs'
     require_relative 'lib/announcer'
