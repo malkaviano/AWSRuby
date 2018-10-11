@@ -1,6 +1,5 @@
 module AWSRuby
     require 'json'
-    require_relative 'data/cluster_conf'
 
     class ConfigLoader
         def initialize(config_dir)
@@ -8,15 +7,24 @@ module AWSRuby
         end
 
         def cluster_conf(name)
+            loadFile(name, 'clusters', '.json')
+        end
+
+        def filter(name)
+            loadFile(name, 'filters', '.json')
+        end
+
+        private
+        def loadFile(name, folder, ext)
             result = []
 
             return result if !(name.is_a? String) or name.empty?
 
-            unless File.extname(name) == ".json" then
-                name += ".json"
+            unless File.extname(name) == ext then
+                name += ext
             end
 
-            path = File.join(@config_dir, 'cluster', name)
+            path = File.join(@config_dir, folder, name)
 
             return result unless File.exists? path
 
