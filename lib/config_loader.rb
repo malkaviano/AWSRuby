@@ -10,7 +10,7 @@ module AWSRuby
             loadFile(name, 'clusters', '.json')
         end
 
-        def filter(name)
+        def filter_conf(name)
             loadFile(name, 'filters', '.json')
         end
 
