@@ -11,7 +11,7 @@ module AWSRuby
         end
 
         def filter_conf(name)
-            loadFile(name, 'filters', '.json')
+            loadFile(name, 'filters', '.json').pop || {}
         end
 
         private

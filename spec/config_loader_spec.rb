@@ -73,10 +73,11 @@ module AWSRuby
         describe "#filter_conf" do
             it_behaves_like "configuration loading",
                             :filter_conf,
-                            [],
-                            [
-
-                            ]
+                            {},
+                            {
+                                "name" => "teste",
+                                "instance_type" => "i3.xlarge"
+                            }
         end
     end
 
