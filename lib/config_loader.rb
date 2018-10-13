@@ -7,11 +7,11 @@ module AWSRuby
         end
 
         def cluster_conf(name:)
-            loadFile(name, 'clusters', '.json')
+            loadFile(name, 'clusters', '.json').freeze
         end
 
         def filter_conf(name:)
-            loadFile(name, 'filters', '.json').pop || {}
+            (loadFile(name, 'filters', '.json').pop || {}).freeze
         end
 
         private
@@ -28,7 +28,11 @@ module AWSRuby
 
             return result unless File.exists? path
 
-            File.open(path, "r").each { |line| result.push JSON.parse(line) }
+            File.open(path, "r").each do |line|
+                parsed = JSON.parse(line)
+
+                result.push parsed.inject({}) {|h, a| h.store(a[0].to_sym, a[1]); h }
+            end
 
             result
         end

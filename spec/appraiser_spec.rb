@@ -58,190 +58,92 @@ module AWSRuby
             end
         end
 
-        describe ".cheapest_zone_per_instance" do
+        describe ".cheapest_zone_for" do
+            shared_examples_for "filtering cheapest zones for instance" do
+                it "returns the cheapest zone per instance" do
+                    expect(subject.cheapest_zone_for(history: history)).to eq(expected)
+                end
+
+                it "returns a frozen obj" do
+                    expect(subject.cheapest_zone_for(history: history).frozen?).to be true
+                end
+            end
 
             context "when history contains only distinct zones per instance" do
                 context "when prices are distinct" do
-                    history = {
-                        "r3" => [
-                            {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.346500", :timestamp=>"2018-10-06 22:05:45 UTC"},
-                            {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                            {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.239300", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                            {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.439300", :timestamp=>"2018-10-06 21:49:03 UTC"}
-                        ],
-                        "c5"=> [
-                            {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
-                        ],
-                        "m5"=> []
+                    let(:history) {
+                        {
+                            "r3" => [
+                                {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.346500", :timestamp=>"2018-10-06 22:05:45 UTC"},
+                                {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                                {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.239300", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                                {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.439300", :timestamp=>"2018-10-06 21:49:03 UTC"}
+                            ],
+                            "c5"=> [
+                                {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
+                            ],
+                            "m5"=> []
+                        }
                     }
 
-                    expected = [
-                        {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                        {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
-                    ]
-
-                    it "returns only cheapest zone entry per instance" do
-                        expect(subject.cheapest_zone_per_instance(history: history)).to eq(expected)
-                    end
-                end
-
-                context "when prices are not distinct" do
-                    history = {
-                        "r3" => [
-                            {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 22:05:45 UTC"},
-                            {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                            {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                            {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 21:49:03 UTC"}
+                    let(:expected) {
+                        [
+                            {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                            {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
                         ]
                     }
 
-                    expected = [
-                        {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 22:05:45 UTC"}
-                    ]
+                    it_behaves_like "filtering cheapest zones for instance"
+                end
 
-                    it "returns the first min price" do
-                        expect(subject.cheapest_zone_per_instance(history: history)).to eq(expected)
-                    end
+                context "when prices are not distinct" do
+                    let(:history) {
+                        {
+                            "r3" => [
+                                {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 22:05:45 UTC"},
+                                {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                                {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                                {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 21:49:03 UTC"}
+                            ]
+                        }
+                    }
+
+                    let(:expected) {
+                        [
+                            {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 22:05:45 UTC"}
+                        ]
+                    }
+
+                    it_behaves_like "filtering cheapest zones for instance"
                 end
             end
 
             context "when history contains repetitive zones per instance" do
-                history = {
-                    "r3" => [
-                        {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 22:05:45 UTC"},
-                        {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                        {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"5", :timestamp=>"2018-10-06 23:49:03 UTC"},
-                        {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"3", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                        {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"4", :timestamp=>"2018-10-06 21:49:03 UTC"}
+                let(:history) {
+                    {
+                        "r3" => [
+                            {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 22:05:45 UTC"},
+                            {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"1", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                            {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"5", :timestamp=>"2018-10-06 23:49:03 UTC"},
+                            {:availability_zone=>"us-east-1a", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"3", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                            {:availability_zone=>"us-east-1b", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"4", :timestamp=>"2018-10-06 21:49:03 UTC"}
+                        ]
+                    }
+                }
+
+                let(:expected) {
+                    [
+                        {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 22:05:45 UTC"}
                     ]
                 }
 
-                expected = [
-                    {:availability_zone=>"us-east-1d", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"2", :timestamp=>"2018-10-06 22:05:45 UTC"}
-                ]
-
-                it "returns the cheapest considering only the latest timestamps" do
-                    expect(subject.cheapest_zone_per_instance(history: history)).to eq(expected)
-                end
+                it_behaves_like "filtering cheapest zones for instance"
             end
         end
 
         describe ".clusters_best_costs" do
-
-            context "when clusters info is empty" do
-                it "returns empty hash" do
-                    clusters_info = []
-
-                    cheapest_zones = [
-                        {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
-                        {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
-                    ]
-
-                    expected = []
-
-                    expect(
-                        subject.clusters_best_costs(
-                            clusters_info: clusters_info,
-                            cheapest_zones: cheapest_zones
-                        )
-                    ).to eq(expected)
-                end
-            end
-
-            context "when cheapest zone list is empty" do
-                it "returns empty hash" do
-                    clusters_info = [
-                        {instance_type: "r5d", workers: 40, ebs_gb: 0},
-                        {instance_type: "m4", workers: 30, ebs_gb: 0},
-                        {instance_type: "c3", workers: 20, ebs_gb: 0}
-                    ]
-
-                    cheapest_zones = []
-
-                    expected = []
-
-                    expect(
-                        subject.clusters_best_costs(
-                            clusters_info: clusters_info,
-                            cheapest_zones: cheapest_zones
-                        )
-                    ).to eq(expected)
-                end
-            end
-
-            context "when there are info for clusters and prices" do
-                clusters_info = [
-                    {instance_type: "r5d", workers: 10, ebs_gb: 100},
-                    {instance_type: "m4", workers: 10, ebs_gb: 100},
-                    {instance_type: "c3", workers: 10, ebs_gb: 100},
-                    {instance_type: "h1", workers: 10, ebs_gb: 100}
-                ]
-
-                cheapest_zones = [
-                    {
-                        :availability_zone=>"us-east-1e",
-                        :instance_type=>"r5d",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"5",
-                        :timestamp=>"2018-10-06 21:49:03 UTC"
-                    },
-                    {
-                        :availability_zone=>"us-east-1d",
-                        :instance_type=>"m4",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"3",
-                        :timestamp=>"2018-10-06 21:49:03 UTC"
-                    },
-                    {
-                        :availability_zone=>"us-east-1c",
-                        :instance_type=>"c3",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"2",
-                        :timestamp=>"2018-10-06 21:49:03 UTC"
-                    },
-                    {
-                        :availability_zone=>"us-east-1a",
-                        :instance_type=>"g2",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"1",
-                        :timestamp=>"2018-10-06 21:49:03 UTC"
-                    }
-                ]
-
-                expected = [
-                    {
-                        :instance_type=>"r5d",
-                        :workers=>10,
-                        :ebs_gb=>100,
-                        :availability_zone=>"us-east-1e",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"5",
-                        :timestamp=>"2018-10-06 21:49:03 UTC",
-                        :cost_hour=>1050.0
-                    },
-                    {
-                        :instance_type=>"m4",
-                        :workers=>10,
-                        :ebs_gb=>100,
-                        :availability_zone=>"us-east-1d",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"3",
-                        :timestamp=>"2018-10-06 21:49:03 UTC",
-                        :cost_hour=>1030.0
-                    },
-                    {
-                        :instance_type=>"c3",
-                        :workers=>10,
-                        :ebs_gb=>100,
-                        :availability_zone=>"us-east-1c",
-                        :product_description=>"Linux/UNIX (Amazon VPC)",
-                        :spot_price=>"2",
-                        :timestamp=>"2018-10-06 21:49:03 UTC",
-                        :cost_hour=>1020.0
-                    }
-                ]
-
-                it "returns best cost for all cluster confs" do
+            shared_examples_for "showing cheapest zone for clusters" do
+                it "returns array with zone, cost and cluster info" do
                     expect(
                         subject.clusters_best_costs(
                             clusters_info: clusters_info,
@@ -250,6 +152,128 @@ module AWSRuby
                         )
                     ).to match_array(expected)
                 end
+
+                it "returns a frozen obj" do
+                    expect(
+                        subject.clusters_best_costs(
+                            clusters_info: clusters_info,
+                            cheapest_zones: cheapest_zones,
+                            ebs_cost_gb_hour: 1
+                        ).frozen?
+                    ).to be true
+                end
+            end
+
+            context "when clusters info is empty" do
+                let(:clusters_info) { [] }
+
+                let(:cheapest_zones) {
+                    [
+                        {:availability_zone=>"us-east-1e", :instance_type=>"r3", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.139300", :timestamp=>"2018-10-06 21:49:03 UTC"},
+                        {:availability_zone=>"us-east-1c", :instance_type=>"c5", :product_description=>"Linux/UNIX (Amazon VPC)", :spot_price=>"0.327700", :timestamp=>"2018-10-06 22:22:10 UTC"}
+                    ]
+                }
+
+                let(:expected) { [] }
+
+                it_behaves_like "showing cheapest zone for clusters"
+            end
+
+            context "when cheapest zone list is empty" do
+                let(:clusters_info) {
+                    [
+                        {instance_type: "r5d", workers: 40, ebs_gb: 0},
+                        {instance_type: "m4", workers: 30, ebs_gb: 0},
+                        {instance_type: "c3", workers: 20, ebs_gb: 0}
+                    ]
+                }
+
+                let(:cheapest_zones) { [] }
+
+                let(:expected) { [] }
+
+                it_behaves_like "showing cheapest zone for clusters"
+            end
+
+            context "when there are info for clusters and prices" do
+                let(:clusters_info) {
+                    [
+                        {instance_type: "r5d", workers: 10, ebs_gb: 100},
+                        {instance_type: "m4", workers: 10, ebs_gb: 100},
+                        {instance_type: "c3", workers: 10, ebs_gb: 100},
+                        {instance_type: "h1", workers: 10, ebs_gb: 100}
+                    ]
+                }
+
+                let(:cheapest_zones) {
+                    [
+                        {
+                            :availability_zone=>"us-east-1e",
+                            :instance_type=>"r5d",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"5",
+                            :timestamp=>"2018-10-06 21:49:03 UTC"
+                        },
+                        {
+                            :availability_zone=>"us-east-1d",
+                            :instance_type=>"m4",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"3",
+                            :timestamp=>"2018-10-06 21:49:03 UTC"
+                        },
+                        {
+                            :availability_zone=>"us-east-1c",
+                            :instance_type=>"c3",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"2",
+                            :timestamp=>"2018-10-06 21:49:03 UTC"
+                        },
+                        {
+                            :availability_zone=>"us-east-1a",
+                            :instance_type=>"g2",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"1",
+                            :timestamp=>"2018-10-06 21:49:03 UTC"
+                        }
+                    ]
+                }
+
+                let(:expected) {
+                    [
+                        {
+                            :instance_type=>"r5d",
+                            :workers=>10,
+                            :ebs_gb=>100,
+                            :availability_zone=>"us-east-1e",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"5",
+                            :timestamp=>"2018-10-06 21:49:03 UTC",
+                            :cost_hour=>1050.0
+                        },
+                        {
+                            :instance_type=>"m4",
+                            :workers=>10,
+                            :ebs_gb=>100,
+                            :availability_zone=>"us-east-1d",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"3",
+                            :timestamp=>"2018-10-06 21:49:03 UTC",
+                            :cost_hour=>1030.0
+                        },
+                        {
+                            :instance_type=>"c3",
+                            :workers=>10,
+                            :ebs_gb=>100,
+                            :availability_zone=>"us-east-1c",
+                            :product_description=>"Linux/UNIX (Amazon VPC)",
+                            :spot_price=>"2",
+                            :timestamp=>"2018-10-06 21:49:03 UTC",
+                            :cost_hour=>1020.0
+                        }
+                    ]
+                }
+
+                it_behaves_like "showing cheapest zone for clusters"
             end
         end
     end

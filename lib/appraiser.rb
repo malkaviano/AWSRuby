@@ -20,14 +20,14 @@ module AWSRuby
                 ).round(2)
             end
 
-            def cheapest_zone_per_instance(history:)
+            def cheapest_zone_for(history:)
                 history.map do |_, value|
                     value.group_by {|h| h[:availability_zone] }
                          .map { |_, value| value.max_by {|h| h[:timestamp] } }
                          .min_by {|h| h[:spot_price] }
                 end
                 .compact
-
+                .freeze
             end
 
             def clusters_best_costs(
@@ -37,7 +37,7 @@ module AWSRuby
                 extra_cost_instance: 0,
                 extra_cost_cluster: 0
             )
-                return [] if clusters_info.empty? or cheapest_zones.empty?
+                return [].freeze if clusters_info.empty? or cheapest_zones.empty?
 
                 clusters_info.map do |h|
                     cheapest_zone = cheapest_zones.select { |cz| cz[:instance_type] == h[:instance_type] }
@@ -61,6 +61,7 @@ module AWSRuby
                     end
                 end
                 .compact
+                .freeze
             end
         end
     end
