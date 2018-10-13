@@ -4,14 +4,14 @@ module AWSRuby
 
     RSpec.describe ConfigLoader do
         shared_examples_for "configuration loading" do |m, wrong, right|
-            let(:config_loader) { ConfigLoader.new(File.realdirpath("spec/configs")) }
+            let(:config_loader) { ConfigLoader.new(config_dir: File.realdirpath("spec/configs")) }
 
             context "when parameter is empty" do
                 name = ""
                 expected = wrong
 
                 it "returns empty array" do
-                    expect(config_loader.send(m, name)).to eq(expected)
+                    expect(config_loader.send(m, name: name)).to eq(expected)
                 end
             end
 
@@ -20,7 +20,7 @@ module AWSRuby
                 expected = wrong
 
                 it "returns empty array" do
-                    expect(config_loader.send(m, name)).to eq(expected)
+                    expect(config_loader.send(m, name: name)).to eq(expected)
                 end
             end
 
@@ -29,7 +29,7 @@ module AWSRuby
                 expected = wrong
 
                 it "returns empty array" do
-                    expect(config_loader.send(m, name)).to eq(expected)
+                    expect(config_loader.send(m, name: name)).to eq(expected)
                 end
             end
 
@@ -38,7 +38,7 @@ module AWSRuby
                 expected = right
 
                 it "returns the config" do
-                    expect(config_loader.send(m, name)).to eq(expected)
+                    expect(config_loader.send(m, name: name)).to eq(expected)
                 end
             end
 
@@ -47,7 +47,7 @@ module AWSRuby
                 expected = right
 
                 it "returns the config" do
-                    expect(config_loader.send(m, name)).to eq(expected)
+                    expect(config_loader.send(m, name: name)).to eq(expected)
                 end
             end
         end
