@@ -1,4 +1,5 @@
 module AWSRuby
+    ## TODO Rework this
     module Announcer
         require 'logger'
 
