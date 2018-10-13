@@ -4,9 +4,9 @@ module AWSRuby
 
     RSpec.describe Appraiser do
 
-        describe ".total_cost" do
+        describe ".spot_cluster_cost" do
             shared_examples_for "calculating cluster cost" do |num_instances, spot_cost, ebs_gb, ebs_cost_gb_hour, expected|
-                result = Appraiser.total_cost(
+                result = Appraiser.spot_cluster_cost(
                     num_instances: num_instances,
                     spot_cost: spot_cost,
                     ebs_gb: ebs_gb,

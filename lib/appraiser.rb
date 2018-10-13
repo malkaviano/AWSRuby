@@ -3,7 +3,7 @@ module AWSRuby
 
     module Appraiser
         class << self
-            def total_cost(num_instances:, spot_cost:, ebs_gb:, ebs_cost_gb_hour:)
+            def spot_cluster_cost(num_instances:, spot_cost:, ebs_gb:, ebs_cost_gb_hour:)
                 (num_instances * (spot_cost + (ebs_gb * ebs_cost_gb_hour))).round(2)
             end
 
