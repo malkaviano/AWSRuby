@@ -14,5 +14,9 @@ module AWSRuby
         def terminate_instances(ids:)
             @ec2.terminate_instances({ instance_ids: ids }).to_h.freeze
         end
+
+        def instance_info(filters)
+            @ec2.describe_instances(filters).to_h.freeze
+        end
     end
 end

@@ -246,6 +246,141 @@ RSpec.describe InstanceServices do
             it_behaves_like "terminating instances", "array with results for ids"
         end
     end
+
+    describe "#instance_info" do
+
+            let(:client) do
+                ec2_client.stub_responses(
+                        :describe_instances,
+                        ->(context) do
+                            if context.params[:filters][0][:name] == "tag" then
+                                Aws::EC2::Types::DescribeInstancesResult.new(
+                                    {
+                                        next_token: nil,
+                                        reservations: [
+                                            Aws::EC2::Types::Reservation.new(
+                                                {
+                                                    groups: [
+                                                        Aws::EC2::Types::GroupIdentifier.new(
+                                                            {
+                                                                group_name: "gName",
+                                                                group_id: "gId",
+                                                            }
+                                                        )
+                                                    ],
+                                                    instances: [
+                                                        Aws::EC2::Types::Instance.new(
+                                                            {
+                                                                ami_launch_index: 0,
+                                                                architecture: "arch",
+                                                                client_token: "token",
+                                                                ebs_optimized: true,
+                                                                image_id: "image",
+                                                                instance_id: "instanceId",
+                                                                instance_lifecycle: "spot",
+                                                                instance_type: "type",
+                                                                spot_instance_request_id: "requestId"
+                                                            }
+                                                        )
+                                                    ],
+                                                    owner_id: "ownerId",
+                                                    requester_id: "requesterId",
+                                                    reservation_id: "reservationId"
+                                                }
+                                            )
+                                        ]
+                                    }
+                                )
+                            else
+                                {}
+                            end
+                        end
+                )
+
+                ec2_client
+            end
+
+            shared_examples_for "getting info about instances" do |msg|
+                it "returns #{msg}" do
+                    expect(stubbed_client.instance_info(filter)).to include(expected)
+                end
+
+                it "returns frozen obj" do
+                    expect(stubbed_client.instance_info(filter).frozen?).to be true
+                end
+            end
+
+            context "when the filter is empty" do
+
+                let(:filter) {
+                    {
+                        filters: [
+                            { name: 'wrong', values: ['value1', 'value2'] }
+                        ]
+                    }
+                }
+
+                let(:expected) { {} }
+
+                it_behaves_like "getting info about instances", "empty hash"
+            end
+
+            context "when the filter has no matches" do
+
+                let(:filter) {
+                    {
+                        filters: [
+                            { name: 'wrong', values: ['value1', 'value2'] }
+                        ]
+                    }
+                }
+
+                let(:expected) { {} }
+
+                it_behaves_like "getting info about instances", "empty hash"
+            end
+
+            context "when the filter has matches" do
+
+                let(:filter) {
+                    {
+                        filters: [
+                            { name: 'tag', values: ['value1', 'value2'] }
+                        ]
+                    }
+                }
+
+                let(:expected) {
+                    {
+                        :reservations => [
+                            {
+                                :groups=>[
+                                    {:group_name=>"gName", :group_id=>"gId"}
+                                ],
+                                :instances=>[
+                                    {
+                                        :ami_launch_index=>0,
+                                        :image_id=>"image",
+                                        :instance_id=>"instanceId",
+                                        :instance_type=>"type",
+                                        :architecture=>"arch",
+                                        :client_token=>"token",
+                                        :ebs_optimized=>true,
+                                        :instance_lifecycle=>"spot",
+                                        :spot_instance_request_id=>"requestId"
+                                    }
+                                ],
+                                :owner_id=>"ownerId",
+                                :requester_id=>"requesterId",
+                                :reservation_id=>"reservationId"
+                            }
+                        ]
+                    }
+                }
+
+                it_behaves_like "getting info about instances", "hash with instance info"
+            end
+        end
 end
 
 end
