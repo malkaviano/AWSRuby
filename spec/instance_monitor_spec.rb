@@ -50,7 +50,6 @@ module AWSRuby
                                     }
                                 )
                             else
-                                puts "fuk"
                                 nil
                             end
                         end
