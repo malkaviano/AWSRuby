@@ -4,7 +4,7 @@ module AWSRuby
     require_relative 'lib/load_confs'
     require_relative 'lib/announcer'
     require_relative 'lib/appraiser'
-    require_relative 'lib/cluster_monitor'
+    require_relative 'lib/instance_monitor'
 
     class << self
         def history_now
@@ -89,7 +89,7 @@ module AWSRuby
 
         private
         def setup
-            throw RuntimeError("ENV credentials not set!") if ENV['AWS_ACCESS_KEY_ID'].nil? || ENV['AWS_SECRET_ACCESS_KEY'].nil?
+            raise "ENV credentials not set!" if ENV['AWS_ACCESS_KEY_ID'].nil? || ENV['AWS_SECRET_ACCESS_KEY'].nil?
 
             Aws.config.update({
                 credentials: Aws::Credentials.new(

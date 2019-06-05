@@ -1,2 +1,0 @@
-{"instance_type":"r5d.2xlarge", "workers":30, "ebs_gb":0}
-{"instance_type":"r5d.4xlarge", "workers":20, "ebs_gb":0}
