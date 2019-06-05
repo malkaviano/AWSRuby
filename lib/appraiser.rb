@@ -1,68 +1,81 @@
 module AWSRuby
-    require_relative '../data/spot_info'
+    require_relative 'spot_info'
 
     module Appraiser
         class << self
-            def cluster_cost(
-                num_instances:,
-                instance_cost:,
-                ebs_gb:,
-                ebs_cost_gb_hour:,
-                extra_cost_instance:,
-                extra_cost_cluster:
-            )
-                (
-                    extra_cost_cluster + num_instances * (
-                        instance_cost +
-                        (ebs_gb * ebs_cost_gb_hour) +
-                        extra_cost_instance
+            def lower_cost_conf(instances_with_cost, confs, ebs_cost_per_gb, include_master = true)
+                hash = {}
+
+                confs.each do |conf|
+                    zone, price = instances_with_cost[conf.instance_type]
+
+                    num = include_master ? (conf.nodes + 1) : conf.nodes
+
+                    total = total_cost(num, price, conf.ebs, ebs_cost_per_gb)
+
+                    hash[total] = [conf.instance_type, zone]
+                end
+
+                hash.min_by {|key, value| key}.flatten
+            end
+
+            def total_cost(num, price, ebsGB, ebs_cost_per_gb)
+                (num * (price + (ebsGB * ebs_cost_per_gb))).round(2)
+            end
+
+            def conf_costs(confs, ebs_cost_per_gb, instances_history)
+                instances_info = history_to_info(instances_history)
+        
+                instances_min_price = min_price(instances_info)
+        
+                min_prices = instances_min_price.map do |instance_type, a|
+                    result = confs.select {|cluster_conf| cluster_conf.instance_type == instance_type}.pop
+        
+                    zone = a[0]
+                    price = a[1]
+        
+                    total = total_cost(result.nodes, price, result.ebs, ebs_cost_per_gb)                    
+        
+                    { instance_type: instance_type, zone: zone, nodes: result.nodes, ebs: result.ebs, cost: total }
+                end
+        
+                best = [ min_prices.min {|i1, i2| i1[:cost] <=> i2[:cost] } ]
+        
+                [ min_prices, best ]
+            end
+            
+            def history_to_info(instances_history)
+                instances_history.map do |key, value|
+                    spot_price = 0
+                    num = 0
+            
+                    instance = SpotInfo.new(
+                        "instance_type" => key,
+                        "spot_prices" => {}
                     )
-                ).round(2)
-            end
-
-            def cheapest_zone_for(history:)
-                history.map do |_, value|
-                    value.group_by {|h| h[:availability_zone] }
-                         .map { |_, value| value.max_by {|h| h[:timestamp] } }
-                         .min_by {|h| h[:spot_price] }
-                end
-                .compact
-                .freeze
-            end
-
-            def clusters_best_costs(
-                clusters_info:,
-                cheapest_zones:,
-                ebs_cost_gb_hour: 0,
-                extra_cost_instance: 0,
-                extra_cost_cluster: 0
-            )
-                return [].freeze if clusters_info.empty? or cheapest_zones.empty?
-
-                clusters_info.map do |h|
-                    cheapest_zone = cheapest_zones.select { |cz| cz[:instance_type] == h[:instance_type] }
-
-                    unless cheapest_zone.empty? then
-                        cz = cheapest_zone.pop
-                        merged = h.merge(cz)
-
-                        cost = cluster_cost(
-                            num_instances: merged[:workers],
-                            instance_cost: merged[:spot_price].to_f,
-                            ebs_gb: merged[:ebs_gb],
-                            ebs_cost_gb_hour: ebs_cost_gb_hour,
-                            extra_cost_instance: extra_cost_instance,
-                            extra_cost_cluster: extra_cost_cluster
-                        )
-
-                        merged.store(:cost_hour, cost)
-
-                        merged
+            
+                    value.group_by {|info| info.availability_zone }.map do |zone, info|
+                        info.map do |instance|
+                            spot_price += instance.spot_price.to_f
+                            num += 1
+                        end
+    
+                        instance.spot_prices[zone] = spot_price / num 
                     end
+            
+                    instance
+                end.flatten
+            end
+    
+            def min_price(instances_info)
+                hash = {}
+    
+                instances_info.each do |instance|
+                    hash[instance.instance_type] = instance.spot_prices.min_by { |zone, price| price }
                 end
-                .compact
-                .freeze
+    
+                hash
             end
         end
-    end
+    end    
 end
