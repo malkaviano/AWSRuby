@@ -109,7 +109,7 @@ module AWSRuby
 
             @spot_client = SpotClient.new(@ec2_client)
 
-            @cluster_monitor = ClusterMonitor.new(@ec2_client)
+            #@cluster_monitor = ClusterMonitor.new(@ec2_client)
 
             @confs = LoadConfs.cluster_confs
         end
